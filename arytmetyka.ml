@@ -16,9 +16,12 @@ let dopelnienie(x,y) =
   else Dopelnienie(x,y);;
 
 let wartosc_od_do x y = przedzial(x,y);;
-let wartosc_dokladnosc x p = wartosc_od_do
-    (x -. ((p *. x) /. 100.)) 
-    (x +. ((p *. x) /. 100.));;
+let wartosc_dokladnosc x p = if (x>=0.) then wartosc_od_do
+      (x -. ((p *. x) /. 100.)) 
+      (x +. ((p *. x) /. 100.))
+  else wartosc_od_do
+      (x +. ((p *. x) /. 100.)) 
+      (x -. ((p *. x) /. 100.))
 let wartosc_dokladna x = przedzial(x,x);;
 
 let mux x y =
@@ -35,20 +38,20 @@ let mun x y =
 let in_wartosc x y = 
   match x with
   | Przedzial(a,b) -> (a<=y) && (y<=b) 
-  | Dopelnienie(a,b) -> (y<a) || (b<y)
+  | Dopelnienie(a,b) -> (y<=a) || (b<=y)
   | Pusty -> false;;
 
 let min_wartosc x =
   match x with
   | Przedzial(a,b) -> a
   | Dopelnienie(a,b) -> neg_infinity
-  | Pusty -> infinity;;
+  | Pusty -> nan;;
 
 let max_wartosc x =
   match x with
   | Przedzial(a,b) -> b
   | Dopelnienie(a,b) -> infinity
-  | Pusty -> neg_infinity;;
+  | Pusty -> nan;;
 
 let sr_wartosc x =
   match x with
@@ -103,10 +106,14 @@ let razy a b =
            let il2 = ya*.xb in
            let il3 = xa*.yb in
            let il4 = ya*.yb in
-           przedzial(
-             mun (mun il1 il2) (mun il3 il4),
-             mux (mux il1 il2) (mux il3 il4)
-           )
+           if (Float.is_nan (mun (mun il1 il2) (mun il3 il4)))
+           || (Float.is_nan (mux (mux il1 il2) (mux il3 il4))) 
+           then przedzial(0.,0.)
+           else
+             przedzial(
+               mun (mun il1 il2) (mun il3 il4),
+               mux (mux il1 il2) (mux il3 il4)
+             )
        | Dopelnienie(xb,yb) -> 
            let il1 = xa*.xb in
            let il2 = ya*.xb in
