@@ -1,14 +1,25 @@
+(*kazda liczba z zadania jest:
+zbiorem pustym, przedzialem lub dopelnieniem przedzialu*)
 type wartosc = 
   | Przedzial of float*float 
   | Dopelnienie of float*float
   | Pusty;;
 
+(*w stalych Przedzial i Dopelnienie wazna jest czystosc:
+druga liczba musi byc wieksza od pierwszej.
+dopelnienie sprawdza ten warunek wprost,
+natomiast przedzial nie jest wywolywany
+z x>y*)
+
+(*chcemy, zeby przedzial zawieral w sobie:
+0. jesli ma tylko wartosci dodatnie i -0. jesli ma tylko wartosci ujemne*)
 let przedzial(x,y) =
   if (x=0.) && (y=0.) then Przedzial(-0.,0.) 
   else if x=0. then Przedzial(0.,y)
   else if y=0. then Przedzial(x,-0.)
   else Przedzial(x,y);;
 
+(*dopelnienie(x,y) zwraca sume przedzialow od -inf do x oraz od x do inf*)
 let dopelnienie(x,y) =
   if (x>=y) then przedzial(neg_infinity,infinity) else 
   if x=0. then Dopelnienie(0.,y)
@@ -16,6 +27,7 @@ let dopelnienie(x,y) =
   else Dopelnienie(x,y);;
 
 let wartosc_od_do x y = przedzial(x,y);;
+(*nie chcemy wywolywac przedzial z x>y*)
 let wartosc_dokladnosc x p = if (x>=0.) then wartosc_od_do
       (x -. ((p *. x) /. 100.)) 
       (x +. ((p *. x) /. 100.))
@@ -24,7 +36,13 @@ let wartosc_dokladnosc x p = if (x>=0.) then wartosc_od_do
       (x -. ((p *. x) /. 100.))
 let wartosc_dokladna x = przedzial(x,x);;
 
+(*zeby nie trzeba bylo korzystac
+z modulu Float*)
 let is_nan x = (compare x nan) = 0;;
+
+(*alternatywne definicje mina i maxa,
+bo funkcje min i max z ocamla
+psuja sie przy nanach*)
 
 let mux x y =
   if is_nan x then y
@@ -36,7 +54,8 @@ let mun x y =
   else if is_nan y then x
   else min x y;; 
 
-
+(*przedzialy sa domykane,
+wiec wszedzie <= zamiast <*)
 let in_wartosc x y = 
   match x with
   | Przedzial(a,b) -> (a<=y) && (y<=b) 
@@ -47,6 +66,7 @@ let min_wartosc x =
   match x with
   | Przedzial(a,b) -> a
   | Dopelnienie(a,b) -> neg_infinity
+  (* co zrobic z pustym zbiorem?*)
   | Pusty -> nan;;
 
 let max_wartosc x =
@@ -58,6 +78,8 @@ let max_wartosc x =
 let sr_wartosc x =
   match x with
   | Przedzial(a,b) ->
+      (*match dla estetyki, sprawdza
+       mozliwe nieskonczone wartosci a i b*)
       (match a,b with
        | t,u when (t = neg_infinity) && (u=infinity) -> nan
        | t,_ when t = neg_infinity -> neg_infinity
@@ -67,6 +89,16 @@ let sr_wartosc x =
   | Dopelnienie(a,b) -> nan 
   | Pusty -> nan;; 
 
+(*przy dodawaniu przedzialu do przedzialu,
+minimalna wartosc bedzie suma minimalnych wartosci
+i podobnie z max. Przy dodawaniu przedzialu
+do dopelnienia, najmniejsza nieosiagalna
+wartosc bedzie suma najmniejszej nieosiagalnej
+wartosci dopelnienia i najwiekszej wartosci przedzialu;
+podobnie z najwieksza nieosiagalna.
+Przy dodawaniu dopelnienia do dopelnienia,
+mozemy wygenerowac dowolna liczbe jako
+-duza_liczba + (duza_liczba+x) *)
 let plus a b =
   match a with
   | Przedzial(xa,ya) -> 
@@ -83,6 +115,14 @@ let plus a b =
       )
   | Pusty -> Pusty;; 
 
+
+(*przedzial-przedzial i dopelnienie-dopelnienie
+podobnie jak przy dodawaniu. najmniejsza nieosiagalna
+liczba w dopelnienie-przedzial bedzie roznica
+najmniejszej nieosiagalnej liczby dopelnienia
+i najwiekszej liczby przedzialu. Odwrotnie
+dla najwiekszej nieosiagalnej liczby i vice versa
+dla przedzial-dopelnienie.*)
 let minus a b =
   match a with
   | Przedzial(xa,ya) ->
@@ -94,7 +134,7 @@ let minus a b =
   | Dopelnienie(xa,ya) ->
       (match b with 
        | Przedzial(xb,yb) -> dopelnienie(xa-.xb,ya-.yb)
-       | Dopelnienie(xb,yb) -> dopelnienie(ya-.yb, xa-.xb)
+       | Dopelnienie(xb,yb) -> przedzial(neg_infinity,infinity)
        | Pusty -> Pusty
       )
   | Pusty -> Pusty;; 
@@ -104,6 +144,10 @@ let razy a b =
   | Przedzial(xa,ya) ->
       (match b with
        | Przedzial(xb,yb) ->
+           (*definiujemy wszystkie iloczyny xa,xb z ya,yb,
+             zeby latwiej bylo o tym myslec. jesli mnozymy
+             0.,0. przez nieskonczony przedzial,
+             to wynik jest 0.,0.; ale komputer zwroci nany.*)
            let il1 = xa*.xb in
            let il2 = ya*.xb in
            let il3 = xa*.yb in
@@ -112,6 +156,9 @@ let razy a b =
            || (is_nan (mux (mux il1 il2) (mux il3 il4))) 
            then przedzial(0.,0.)
            else
+             (*mozliwe wartosci w przedzial*przedzial
+               to wszystkie od najmniejszego iloczynu
+               do najwiekszego.*)
              przedzial(
                mun (mun il1 il2) (mun il3 il4),
                mux (mux il1 il2) (mux il3 il4)
