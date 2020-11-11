@@ -168,27 +168,39 @@ let razy a b =
            let il2 = ya*.xb in
            let il3 = xa*.yb in
            let il4 = ya*.yb in
-           (match xa,ya with
+             (*zakomentowana funkcja robi to samo
+             i może jest bardziej przejrzysta,
+             ale nowe rozwiazanie jest zgrabiejsze*)
+           (*match xa,ya with
             | c,d when (c <0.) && (d >0.) -> przedzial(neg_infinity,infinity)
             | c,d when (c>=0.) && (d >0.) -> dopelnienie(mux il1 il2,mun il3 il4)
             | c,d when (c <0.) && (d<=0.) -> dopelnienie(mux il3 il4,mun il1 il2)
             | _,_ -> przedzial(0.,0.)
-           )
+           *)
+            if (xa<0.) && (ya>0.) then przedzial(neg_infinity,infinity) else
+           if (xa=0.) && (ya=0.) then przedzial(0.,0.) else
+           dopelnienie(mux (mun il1 il3) (mun il2 il4),
+                       mun (mux il1 il3) (mux il2 il4)) 
        | Pusty -> Pusty
       )
   | Dopelnienie(xa,ya) ->
       (match b with
        | Przedzial(xb,yb) ->
+           (* a*b=b*a, przekopiowalem kod*)
            let il1 = xb*.xa in
            let il2 = yb*.xa in
            let il3 = xb*.ya in
            let il4 = yb*.ya in
-           (match xb,yb with
+           (*match xb,yb with
             | c,d when (c <0.) && (d >0.) -> przedzial(neg_infinity,infinity)
             | c,d when (c>=0.) && (d >0.) -> dopelnienie(mux il1 il2,mun il3 il4)
             | c,d when (c <0.) && (d<=0.) -> dopelnienie(mux il3 il4,mun il1 il2)
             | _,_ -> przedzial(0.,0.)
-           )
+           *)
+           if (xb<0.) && (yb>0.) then przedzial(neg_infinity,infinity) else
+           if (xb=0.) && (yb=0.) then przedzial(0.,0.) else
+           dopelnienie(mux (mun il1 il3) (mun il2 il4),
+                       mun (mux il1 il3) (mux il2 il4)) 
        | Dopelnienie(xb,yb) ->
            if ( (xa>0.) || (xb>0.) ) || ( (ya<0.) || (yb<0.) )
            then przedzial(neg_infinity,infinity)
