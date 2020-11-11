@@ -24,14 +24,16 @@ let wartosc_dokladnosc x p = if (x>=0.) then wartosc_od_do
       (x -. ((p *. x) /. 100.))
 let wartosc_dokladna x = przedzial(x,x);;
 
+let is_nan x = (compare x nan) = 0;;
+
 let mux x y =
-  if Float.is_nan x then y
-  else if Float.is_nan y then x
+  if is_nan x then y
+  else if is_nan y then x
   else max x y;;
 
 let mun x y =
-  if Float.is_nan x then y
-  else if Float.is_nan y then x
+  if is_nan x then y
+  else if is_nan y then x
   else min x y;; 
 
 
@@ -86,14 +88,14 @@ let minus a b =
   | Przedzial(xa,ya) ->
       (match b with 
        | Przedzial(xb,yb) -> przedzial(xa-.yb,ya-.xb)
-       | Dopelnienie(xb,yb) -> dopelnienie(xa-.xb,ya-.yb)
+       | Dopelnienie(xb,yb) -> dopelnienie(ya-.yb,xa-.xb)
        | Pusty -> Pusty
       )
   | Dopelnienie(xa,ya) ->
       (match b with 
-       | Przedzial(xb,yb) -> dopelnienie(xb-.xa,yb-.ya)
-       | Dopelnienie(xb,yb) -> dopelnienie((ya-.yb), (xa-.xb))
-       |Pusty -> Pusty
+       | Przedzial(xb,yb) -> dopelnienie(xa-.xb,ya-.yb)
+       | Dopelnienie(xb,yb) -> dopelnienie(ya-.yb, xa-.xb)
+       | Pusty -> Pusty
       )
   | Pusty -> Pusty;; 
 
@@ -106,8 +108,8 @@ let razy a b =
            let il2 = ya*.xb in
            let il3 = xa*.yb in
            let il4 = ya*.yb in
-           if (Float.is_nan (mun (mun il1 il2) (mun il3 il4)))
-           || (Float.is_nan (mux (mux il1 il2) (mux il3 il4))) 
+           if (is_nan (mun (mun il1 il2) (mun il3 il4)))
+           || (is_nan (mux (mux il1 il2) (mux il3 il4))) 
            then przedzial(0.,0.)
            else
              przedzial(
@@ -156,19 +158,20 @@ let podzielic a b =
        | Przedzial(xa,ya) -> przedzial
                                (mun (ya/.xb) (ya/.yb), mux (xa/.xb) (xa/.yb))
        | Dopelnienie(xa,ya) -> dopelnienie 
-                                 (mun (ya/.xb) (ya/.yb), mux (xa/.xb) (xa/.yb))
+                                 (mux (ya/.xb) (ya/.yb), mun (xa/.xb) (xa/.yb))
        | Pusty -> Pusty
       ) 
   | Przedzial(xb,yb) when (xb <0.) && (yb >0.) ->
       (match a with 
        | Przedzial(xa,ya) -> if (xa=0.) && (ya=0.) then przedzial(0.,0.)
+	   else if (xa*.ya<0.) then przedzial(neg_infinity,infinity)
            else dopelnienie(mux (mun (ya/.xb) (ya/.yb)) (mun (xa/.xb) (xa/.yb)),
                             mun (mux (ya/.xb) (ya/.yb)) (mux (xa/.xb) (xa/.yb)))
        | Dopelnienie(xa,ya) -> 
            dopelnienie(mux (xa/.yb) (ya/.xb), mun (xa/.xb) (ya/.yb))
-             (*jeśli xa>0 lub ya<0, to funkcja  dopełnienie zwróci
+             (*jesli xa>0 lub ya<0, to funkcja  dopelnienie zwroci
                                  przedzial(neg_infinity,infinity*) 
-       (* jeśli xa=ya=0, to funkcja dopelnienie zwróci przedział pełny*)  
+       (* jesli xa=ya=0, to funkcja dopelnienie zwroci przedzial pelny*)  
        | Pusty -> Pusty
       )
   | Przedzial(xb,yb) when (xb>=0.) && (yb>=0.) ->
@@ -176,7 +179,7 @@ let podzielic a b =
        | Przedzial(xa,ya) -> przedzial 
                                (mun (xa/.yb) (xa/.xb), mux (ya/.xb) (ya/.yb))
        | Dopelnienie(xa,ya) -> dopelnienie
-                                 (mun (ya/.xb) (ya/.yb), mux (xa/.xb) (xa/.yb))
+                                 (mux (xa/.yb) (xa/.xb), mun (ya/.xb) (ya/.yb))
        | Pusty -> Pusty
       )
   | Dopelnienie(xb,yb) when (xb<=0.) && (yb>=0.) -> 
@@ -207,7 +210,7 @@ let podzielic a b =
        | Dopelnienie(xa,ya) -> przedzial(neg_infinity,infinity)
        | Pusty -> Pusty
       )
-  (*żeby pozbyć się warnów *)
+  (*zeby pozbyc sie warnow *)
   | Przedzial(_,_) -> Pusty
   | Dopelnienie(_,_) -> Pusty
   | Pusty -> Pusty;; 
