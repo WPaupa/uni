@@ -39,15 +39,20 @@ let is_empty  = function
   | Null -> true
   | Node(_,_,_,_) -> false;;
 
+  exception WA;;
+
+(* Returns true if ALL values from q are taken out in the order given in l *)
 let test q l =
+    try
       let (b, nq) = List.fold_left (fun a x -> 
         let (e, nq) = delete_min (snd a)
         in 
-        if(compare x e != 0) then (false, nq) 
-        else ((fst a)&&true, nq)) 
+        if(compare x e != 0) then raise WA 
+        else (true, nq)) 
                                    (true, q) l
       in
       b && (is_empty nq)
+    with WA -> false
 ;;
 
 (* Adds iter times all elements from list l to a using add function f *)
