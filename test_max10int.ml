@@ -1,5 +1,3 @@
-open Leftist;;
-
 exception WA;;
 
 (* Returns true if ALL values from q are taken out in the order given in l *)
