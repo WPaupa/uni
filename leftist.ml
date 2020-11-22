@@ -21,7 +21,7 @@ let rec join a b =
       if akey <= bkey then
         (*złączamy prawe poddrzewo z drzewem do złączenia rekurencyjnie*)
         let r = join ar b 
-        (*zamieniamy kolejność lewego z prawym tak, żeby spełniony był warunek lewicowości*))
+        (*zamieniamy kolejność lewego z prawym tak, żeby spełniony był warunek lewicowości*)
         in if al = Null then
           Node(r,al,akey,1)
         else if (sval r) <= (sval al)
@@ -34,7 +34,7 @@ let rec join a b =
         then Node(bl,r,bkey,1+(sval r)) else Node(r,bl,bkey,1+(sval bl));;
 
 let empty = Null;;
-let add a q = join q (l a);;
+let add a q = join q (Node(Null,Null,a,1));;
 
 exception Empty;;
 let delete_min = function
