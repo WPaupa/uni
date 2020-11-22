@@ -47,7 +47,7 @@ let is_empty  = function
 
 exception WA;;
 
-(* Returns true if ALL values from q are taken out in the order given in l *)
+(* Funkcja test M. Gienieczki *)
 let test q l =
   try
     let (b, nq) = List.fold_left (fun a x -> 
