@@ -98,7 +98,7 @@ let rec add_one x = function
       	if (snd x) + 1 = fst k then
       	merge (add_pset (min (fst x) (fst k), max (snd x) (snd k)) l) r
         else if (fst x) - 1 = snd k then
-        merge (add_pset (min (fst x) (fst k), max (snd x) (snd k)) r) l
+        merge l (add_pset (min (fst x) (fst k), max (snd x) (snd k)) r) 
         else Node (l, x, r, h)
       else if c < 0 then
         let nl = add_one x l in
