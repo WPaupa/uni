@@ -3,9 +3,12 @@ type t =
   | Empty
   | Node of  t * (int*int) * t * int
 
+let odejmij_jeden x = if x>min_int then x-1 else min_int;;
+let dodaj_jeden x = if x<max_int then x+1 else max_int
+
 (*komparator mowi, ze przedzialy sa rowne, kiedy nie sa rozlaczne;
   w przeciwnym wypadku je porownoje standardowo*)
-let cmp (a,b) (c,d) = if b<c-1 then -1 else if a>d+1 then 1 else 0 
+let cmp (a,b) (c,d) = if b<(odejmij_jeden c) then -1 else if a>(dodaj_jeden d) then 1 else 0 
 
 (*gotowe - przepisane z pseta*)
 let height = function
@@ -66,7 +69,7 @@ let merge t1 t2 =
 let empty = Empty
 
 (*gotowe - przepisane z pseta*)
-let is_empty x = Empty
+let is_empty x = (x = Empty)
 
 (*gotowe - przepisane z pseta z drobna modyfikacja*)
 (*dziala tylko dla rozlacznych i niesasiadujacych
@@ -134,8 +137,8 @@ let split x set =
     | Node (l, v, r, _) ->
         let c = comp x v in
         if c = 0 then 
-        	let p1 = if (fst v<=x-1) then add_one (fst v,x-1) l else l  
-        	and p2 = if (x+1<=snd v) then add_one (x+1,snd v) r else r in
+        	let p1 = if (fst v)< x then add_one (fst v,(odejmij_jeden x)) l else l  
+        	and p2 = if x<(snd v) then add_one (dodaj_jeden x,snd v) r else r in
         	(p1, true, p2)
         else if c < 0 then
           let (ll, pres, rl) = loop x l in (ll, pres, join rl v r)
