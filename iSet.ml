@@ -1,8 +1,17 @@
 (*definicja z pseta dostosowana na potrzeby zadania*)
+(*ostatnia liczba to liczba elementow w drzewie*)
 type t =
   | Empty
-  | Node of  t * (int*int) * t * int
+  | Node of  t * (int*int) * t * int * int
 
+(*plus dodaje liczby. stara sie nie wywalac przy max_intach.
+podobnie minus*)
+let plus a b =
+  if ((b>0) && (a+b<a)) || ((a>0) && (a+b<b)) then max_int else a+b
+let minus a b =
+  if (max a b)-(min a b)<0 then max_int else a-b
+
+(*na wszelki*)
 let odejmij_jeden x = if x>min_int then x-1 else min_int;;
 let dodaj_jeden x = if x<max_int then x+1 else max_int
 
@@ -10,13 +19,21 @@ let dodaj_jeden x = if x<max_int then x+1 else max_int
   w przeciwnym wypadku je porownoje standardowo*)
 let cmp (a,b) (c,d) = if b<(odejmij_jeden c) then -1 else if a>(dodaj_jeden d) then 1 else 0 
 
+
+
+
 (*gotowe - przepisane z pseta*)
 let height = function
-  | Node (_, _, _, h) -> h
+  | Node (_, _, _, h, _) -> h
+  | Empty -> 0
+
+(*zwraca liczbe elementow w drzewie*)
+let elementy = function
+  | Node (_, _, _, _, n) -> n
   | Empty -> 0
 
 (*gotowe - przepisane z pseta*)
-let make l k r = Node (l, k, r, max (height l) (height r) + 1)
+let make l (ka,kb) r = Node (l, (ka,kb), r, max (height l) (height r) + 1, plus (plus (elementy r)  (elementy l))  (dodaj_jeden (minus kb ka)))
 
 (*gotowe - przepisane z pseta*)
 let bal l k r =
@@ -24,36 +41,36 @@ let bal l k r =
   let hr = height r in
   if hl > hr + 2 then
     match l with
-    | Node (ll, lk, lr, _) ->
+    | Node (ll, lk, lr, _, _) ->
         if height ll >= height lr then make ll lk (make lr k r)
         else
           (match lr with
-          | Node (lrl, lrk, lrr, _) ->
+          | Node (lrl, lrk, lrr, _, _) ->
               make (make ll lk lrl) lrk (make lrr k r)
           | Empty -> assert false)
     | Empty -> assert false
   else if hr > hl + 2 then
     match r with
-    | Node (rl, rk, rr, _) ->
+    | Node (rl, rk, rr, _, _) ->
         if height rr >= height rl then make (make l k rl) rk rr
         else
           (match rl with
-          | Node (rll, rlk, rlr, _) ->
+          | Node (rll, rlk, rlr, _, _) ->
               make (make l k rll) rlk (make rlr rk rr)
           | Empty -> assert false)
     | Empty -> assert false
-  else Node (l, k, r, max hl hr + 1)
+  else Node (l, k, r, max hl hr + 1, plus (plus (elementy r)  (elementy l))  (dodaj_jeden (minus (snd k) (fst k))))
 
 (*gotowe - przepisane z pseta*)
 let rec min_elt = function
-  | Node (Empty, k, _, _) -> k
-  | Node (l, _, _, _) -> min_elt l
+  | Node (Empty, k, _, _, _) -> k
+  | Node (l, _, _, _, _) -> min_elt l
   | Empty -> raise Not_found
 
 (*gotowe - przepisane z pseta*)
 let rec remove_min_elt = function
-  | Node (Empty, _, r, _) -> r
-  | Node (l, k, r, _) -> bal (remove_min_elt l) k r
+  | Node (Empty, _, r, _, _) -> r
+  | Node (l, k, r, _, _) -> bal (remove_min_elt l) k r
   | Empty -> invalid_arg "ISet.remove_min_elt"
 
 (*gotowe - przepisane z pseta*)
@@ -75,16 +92,19 @@ let is_empty x = (x = Empty)
 (*dziala tylko dla rozlacznych i niesasiadujacych
 przedzialow*)
 let rec add_pset x = function
-  | Node (l, k, r, h) ->
+  | Node (l, k, r, h, _) ->
       let c = cmp x k in
-      if c = 0 then Node (l, (min (fst x) (fst k), max (snd x) (snd k)), r, h)
+      if c = 0 then 
+        let ka = min (fst x) (fst k)
+        and kb = max (snd x) (snd k) in
+        Node (l, (ka, kb), r, h, plus (plus (elementy r)  (elementy l))  (dodaj_jeden (minus kb ka)))
       else if c < 0 then
         let nl = add_pset x l in
         bal nl k r
       else
         let nr = add_pset x r in
         bal l k nr
-  | Empty -> Node (Empty, x, Empty, 1)
+  | Empty -> Node (Empty, x, Empty, 1, dodaj_jeden (minus (snd x) (fst x)))
 
 
 (*dziala tylko wtedy, gdy x jest
@@ -95,29 +115,29 @@ ale laczy dwa przedzialy,
 gdy sasiaduja ze soba i wywoluje znowu
 add_pset, zeby to dodal*)
 let rec add_one x = function
-  | Node (l, k, r, h) ->
+  | Node (l, k, r, h, _) ->
       let c = cmp x k in
       if c = 0 then 
       	if (snd x) + 1 = fst k then
       	merge (add_pset (min (fst x) (fst k), max (snd x) (snd k)) l) r
         else if (fst x) - 1 = snd k then
         merge l (add_pset (min (fst x) (fst k), max (snd x) (snd k)) r) 
-        else Node (l, x, r, h)
+        else Node (l, x, r, h, plus (plus (elementy r)  (elementy l))  (plus (minus (snd k) (fst k)) 1))
       else if c < 0 then
         let nl = add_one x l in
         bal nl k r
       else
         let nr = add_one x r in
         bal l k nr
-  | Empty -> Node (Empty, x, Empty, 1)
+  | Empty -> Node (Empty, x, Empty, 1, dodaj_jeden (minus (snd x) (fst x)))
 
 
 (*gotowe - przepisane z pseta*)
 let rec join l v r =
   match (l, r) with
-  |  (Empty, _) -> add_one v r
+  | (Empty, _) -> add_one v r
   | (_, Empty) -> add_one v l
-  | (Node(ll, lv, lr, lh), Node(rl, rv, rr, rh)) ->
+  | (Node(ll, lv, lr, lh, _), Node(rl, rv, rr, rh, _)) ->
       if lh > rh + 2 then bal ll lv (join lr v r) else
       if rh > lh + 2 then bal (join l v rl) rv rr else
       make l v r
@@ -134,7 +154,7 @@ let split x set =
   let rec loop x = function
       Empty ->
         (Empty, false, Empty)
-    | Node (l, v, r, _) ->
+    | Node (l, v, r, _, _) ->
         let c = comp x v in
         if c = 0 then 
         	let p1 = if (fst v)< x then add_one (fst v,(odejmij_jeden x)) l else l  
@@ -161,7 +181,7 @@ let add x set  = add_one x (remove x set)
 (*gotowe - przepisane z pseta z drobna modyfikacja*)
 let mem x set =
   let rec loop = function
-    | Node (l, k, r, _) ->
+    | Node (l, k, r, _, _) ->
         let c = comp x k in
         c = 0 || loop (if c < 0 then l else r)
     | Empty -> false in
@@ -171,14 +191,14 @@ let mem x set =
 let iter f set =
   let rec loop = function
     | Empty -> ()
-    | Node (l, k, r, _) -> loop l; f k; loop r in
+    | Node (l, k, r, _, _) -> loop l; f k; loop r in
   loop set
 
 (*gotowe - przepisane z pseta*)
 let fold f set acc =
   let rec loop acc = function
     | Empty -> acc
-    | Node (l, k, r, _) ->
+    | Node (l, k, r, _, _) ->
           loop (f k (loop acc l)) r in
   loop acc set
 
@@ -186,16 +206,12 @@ let fold f set acc =
 let elements set = 
   let rec loop acc = function
       Empty -> acc
-    | Node(l, k, r, _) -> loop (k :: loop acc r) l in
+    | Node(l, k, r, _, _) -> loop (k :: loop acc r) l in
   loop [] set
 
-(*safeplus dodaje liczbe elementow w przedziale (c,d) do liczby a.
-stara sie nie wywalac przy max_intach.*)
-let safeplus a (c,d) =
-	let b = if d-c<0 then max_int else d-c+1 in
-	if ((a=max_int) || b=max_int) || (a+b<0) then max_int else a+b
-
+(*jesli ten element wystepuje
+w secie, trzeba go dodac*)
 let below n set = 
-	let k = split n set in
-	if (second k) then List.fold_left safeplus 1 (elements (first k))
-	else List.fold_left safeplus 0 (elements (first k)) 
+  if (second (split n set))
+    then dodaj_jeden (elementy (first (split n set)))
+  else elementy (first (split n set))
