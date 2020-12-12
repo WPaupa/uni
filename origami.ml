@@ -40,7 +40,7 @@ let skladaj lst f = List.fold_left (fun f (p1,p2) -> zloz p1 p2 f) f lst;;
 
 
 let centr = (0., 0.);;
-let info = false;;
+let info = true;;
 
 if info then if info then print_endline "Correctness tests for zloz function:";;
 
