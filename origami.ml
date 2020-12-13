@@ -2,8 +2,7 @@ type point = float * float;;
 type kartka = point -> int;; 
 
 let eps = 0.0001;;
-let (<=) x y = if (x)<=(y+.eps) then true else false;;
-let (<) x y = if x < (y+.eps) then true else false;;
+let (<=) x y = if (x)<=(y+.eps) then true else false;; 
 let (=.) x y = if (x <= y) && (y <= x) then true else false;;
 
 let prostokat (x1,y1) (x2,y2) (x,y) = 
@@ -22,6 +21,7 @@ let len (ux,uy) = sqrt((ux*.ux)+.(uy*.uy));;
 let vec (x1,y1) (x2,y2) = (x2-.x1,y2-.y1);;
 let vers p1 p2 = mult (1./.(len (vec p1 p2))) (vec p1 p2) ;;
 let plus (ux,uy) (vx,vy) = ((ux+.vx),(uy+.vy));;
+let minus u v = plus u (mult (-1.) v);;
 let normal (vx,vy) = (vy,~-.vx);; 
 
 let normalize r f (x,y) = f (x*.r,y*.r);; 
@@ -36,10 +36,9 @@ let rec zloz p1 p2 f p =
   else if cross (vec p1 p) (vec p p2)<0.
   then 0
   else 
-    let v = plus (mult (scalar (vec p1 p) (vers p1 p2)) (vers p1 p2))
-        (mult (~-.(scalar (vec p1 p) (normal (vers p1 p2)))) (normal (vers p1 p2)))
-    in let v = plus v p1
-    in (f v)+(f p);; 
+    let n = vers p1 p2 in
+    let v = plus (vec p p1) (mult (-2.*.(scalar (vec p p1) n)) n)
+    in (f (plus p1 v))+(f p);; 
 
 let skladaj lst f = List.fold_left (fun f (p1,p2) -> zloz p1 p2 f) f lst;; 
 
