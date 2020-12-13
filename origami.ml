@@ -29,7 +29,9 @@ let mx (x,y) = max x y;;
 
 let rec zloz p1 p2 f p = 
   let m = max (max (mx p1) (mx p2)) (mx p)
-  in if m>1e150 then zloz (mult (1./.m) p1) (mult (1./.m) p2)
+  in if m>1e150 then
+  let m = sqrt(m) in
+   zloz (mult (1./.m) p1) (mult (1./.m) p2)
       (normalize m f) (mult (1./.m) p) else
   if cross (vec p1 p) (vec p p2)=.0.
   then f p 
