@@ -24,15 +24,8 @@ let plus (ux,uy) (vx,vy) = ((ux+.vx),(uy+.vy));;
 let minus u v = plus u (mult (-1.) v);;
 let normal (vx,vy) = (vy,~-.vx);; 
 
-let normalize r f (x,y) = f (x*.r,y*.r);; 
-let mx (x,y) = max x y;;
 
 let rec zloz p1 p2 f p = 
-  let m = max (max (mx p1) (mx p2)) (mx p)
-  in if m>1e150 then
-  let m = sqrt(m) in
-   zloz (mult (1./.m) p1) (mult (1./.m) p2)
-      (normalize m f) (mult (1./.m) p) else
   if cross (vec p1 p) (vec p p2)=.0.
   then f p 
   else if cross (vec p1 p) (vec p p2)<0.
@@ -48,6 +41,8 @@ let skladaj lst f = List.fold_left (fun f (p1,p2) -> zloz p1 p2 f) f lst;;
 
 let centr = (0., 0.);;
 let info = true;;
+
+let mx_float = sqrt(mx_float);;
 
 if info then if info then print_endline "Correctness tests for zloz function:";;
 
@@ -427,16 +422,16 @@ let const = 24;;
 
 let l = gen const;;
 
-let a = prostokat ((-.max_float) /. 4., (-.max_float) /. 4.)
-    (max_float /. 4., max_float /. 4.);;
+let a = prostokat ((-.mx_float) /. 4., (-.mx_float) /. 4.)
+    (mx_float /. 4., mx_float /. 4.);;
 
 let a = skladaj l a;;
 
 assert(a centr = (1 lsl const) + 1);;
 assert(a (1., 1.) = 1 lsl const);;
 assert(a (-1., -1.) = 2);;
-assert(a ((-.max_float) /. 2., (-.max_float) /. 2.) = 0);;
-assert(a (max_float /. 4., max_float /. 4.) = 0);;
+assert(a ((-.mx_float) /. 2., (-.mx_float) /. 2.) = 0);;
+assert(a (mx_float /. 4., mx_float /. 4.) = 0);;
 
 for i = -2 downto -100000 do
   assert(a (float_of_int(i), float_of_int(i)) = 2)
@@ -451,15 +446,15 @@ let const = 24;;
 
 let l = gen const;;
 
-let a = kolko centr (max_float /. 4.);;
+let a = kolko centr (mx_float /. 4.);;
 
 let a = skladaj l a;;
 
 assert(a centr = (1 lsl const) + 1);;
 assert(a (1., 1.) = 1 lsl const);;
 assert(a (-1., -1.) = 2);;
-assert(a ((-.max_float) /. 2., (-.max_float) /. 2.) = 0);;
-assert(a (max_float /. 4., max_float /. 4.) = 0);;
+assert(a ((-.mx_float) /. 2., (-.mx_float) /. 2.) = 0);;
+assert(a (mx_float /. 4., mx_float /. 4.) = 0);;
 
 for i = -2 downto -100000 do
   assert(a (float_of_int(i), float_of_int(i)) = 2)
