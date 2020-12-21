@@ -6,15 +6,15 @@ let topol g =
   and wyn = ref ([]) in
   let rec visit n tempmarx =
     try 
-      if (find n !marx) then ();
+      find n !marx
     with Not_found ->
       try
-        if (find n tempmarx) then raise Cykliczne;
+        find n tempmarx; raise Cykliczne
       with Not_found ->
         (try
-           List.iter (fun x -> visit x (add n true tempmarx)) (find n m)
+           List.iter (fun x -> visit x (add n () tempmarx)) (find n m)
          with Not_found -> ());
-        marx := add n true !marx;
+        marx := add n () !marx;
         wyn := n::(!wyn) in
-  iter (fun k v -> try find k (!marx);() with Not_found -> visit(k) empty) m;
+  iter (fun k v -> try find k (!marx) with Not_found -> visit(k) empty) m;
   !wyn;;
