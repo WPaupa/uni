@@ -1,7 +1,7 @@
 open PMap;;
 exception Cykliczne;;
 let topol g =
-  let m = List.fold_left (fun m (k,v) -> add k v m) empty g in
+  let m = List.fold_left (fun m (k,v) -> try add k (add v (find k m)) m with Not_found -> add k v m) empty g in
   let marx = ref (create compare)
   and wyn = ref ([]) in
   let rec visit n tempmarx =
