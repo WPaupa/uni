@@ -8,17 +8,25 @@ let rec gcd a b =
 let __gcd l = Array.fold_left gcd (l.(0)) l;;
 
 let przelej ar tab = 
-  let n = Array.length ar
-  and g = __gcd ar in
+  let n = Array.length ar in
+  if n=0 then raise (Ex 0);
+  let g = __gcd ar in
+  if g <> 0 then
   if not (Array.for_all (fun k -> k mod g = 0) tab) then raise (Ex (-1));
+  let check = ref true in
+  for i = 0 to (n-1)
+  do
+  	if (tab.(i)=0) || (ar.(i)=tab.(i)) then check := false;
+  done;
+  if !check then raise (Ex (-1));
   let stany = Hashtbl.create 100000
   and q = create ()
   and pustostan = Array.make n 0 in
   add (pustostan,0) q;
   while not (is_empty q)
   do
-    let (st,dist) = take q in 
-    let dupy = ref false in
+    let (st,dist) = take q in
+    let dupy = ref false in 
     for i = 0 to (n-1) do
       if (tab.(i)<>st.(i)) then dupy := true;
     done;
