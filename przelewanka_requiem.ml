@@ -2,8 +2,15 @@ open Queue
 
 exception Ex of int;;
 
+let rec gcd a b =
+        if b = 0 then a else gcd b (a mod b);;
+
+let __gcd l = Array.fold_left gcd (l.(0)) l;;
+
 let przelej ar tab = 
-  let n = Array.length ar in
+  let n = Array.length ar
+  and g = __gcd ar in
+  if not (Array.for_all (fun k -> k mod g = 0) tab) then raise (Ex (-1));
   let stany = Hashtbl.create 100000
   and q = create ()
   and pustostan = Array.make n 0 in
@@ -43,5 +50,5 @@ let przelej ar tab =
         done;
       end 
   done; (-1)
-  
+
 let przelewanka ar = try przelej (Array.map (fun (x,_)-> x) ar) (Array.map (fun (_,y) -> y) ar) with Ex(i) -> i
