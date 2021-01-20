@@ -24,10 +24,10 @@ let przelej ar tab =
           let p = st.(i) in
           st.(i) <- 0;
           if not (Hashtbl.mem stany st)
-          then begin Hashtbl.add stany (Array.copy st) (); add (Array.copy st,dist+1) q; end;
+          then add (Array.copy st,dist+1) q;
           st.(i) <- ar.(i);
           if not (Hashtbl.mem stany st) 
-          then begin Hashtbl.add stany (Array.copy st) (); add (Array.copy st,dist+1) q; end;
+          then add (Array.copy st,dist+1) q;
           st.(i) <- p;
           for j = 0 to (n-1)
           do
@@ -36,7 +36,7 @@ let przelej ar tab =
             st.(i) <- p - przelane;
             st.(j) <- st.(j) + przelane;
             if not (Hashtbl.mem stany st) 
-            then begin Hashtbl.add stany (Array.copy st) (); add (Array.copy st,dist+1) q; end;
+            then add (Array.copy st,dist+1) q; 
             st.(i) <- p;
             st.(j) <- r;
           done
