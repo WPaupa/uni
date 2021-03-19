@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/wojciech/CLionProjects/male_zadanie/line.c
+string.h
+-
+line.h
+/home/wojciech/CLionProjects/male_zadanie/line.h
+
+/home/wojciech/CLionProjects/male_zadanie/line.h
+stdlib.h
+-
+stdbool.h
+-
+
+/home/wojciech/CLionProjects/male_zadanie/linearray.c
+linearray.h
+/home/wojciech/CLionProjects/male_zadanie/linearray.h
+string.h
+-
+
+/home/wojciech/CLionProjects/male_zadanie/linearray.h
+stdlib.h
+-
+line.h
+/home/wojciech/CLionProjects/male_zadanie/line.h
+
+/home/wojciech/CLionProjects/male_zadanie/process.c
+process.h
+/home/wojciech/CLionProjects/male_zadanie/process.h
+string.h
+-
+stdbool.h
+-
+errno.h
+-
+
+/home/wojciech/CLionProjects/male_zadanie/process.h
+line.h
+/home/wojciech/CLionProjects/male_zadanie/line.h
+
