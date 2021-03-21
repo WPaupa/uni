@@ -1,3 +1,4 @@
+#define  _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -106,12 +107,13 @@ void out()
     for (size_t i = 0; i < data.linecount; i++)
     {
         if (odw[i]) continue;
-        for (size_t j = i; j < data.linecount; j++)
+        printf("%zu",data.lines[i].number);
+        for (size_t j = i+1; j < data.linecount; j++)
         {
             if (equal(data.lines[i],data.lines[j]))
             {
                 odw[j] = true;
-                printf("%zu ",data.lines[j].number);
+                printf(" %zu",data.lines[j].number);
             }
         }
         puts("");
@@ -123,11 +125,11 @@ int main()
     data = newarray();
     int i = 0;
     while(read(++i));
-    sort(&data);
+    sort(data);
     for(size_t it = 0; it < data.linecount; it++)
     {
-        printf("==== LINE NUMBER %zu =====\n",data.lines[it].number);
-        debug(data.lines[it]);
+        //printf("==== LINE NUMBER %zu =====\n",data.lines[it].number);
+        //debug(data.lines[it]);
     }
     out();
     empty(data);

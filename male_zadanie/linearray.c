@@ -1,5 +1,6 @@
 #include "linearray.h"
 #include <string.h>
+#include <stdio.h>
 
 linearray newarray()
 {
@@ -35,7 +36,8 @@ void empty(linearray c)
 
 int nancomp(const void* a, const void* b)
 {
-    return (strcmp((char *)a,(char *)b));
+    //printf("%s %s %d\n",*((char**)a),*((char**)b),strcmp(*((char **)a),*((char **)b)));
+    return (strcmp(*((char **)a),*((char **)b)));
 }
 
 int numcomp(const void* a, const void* b)
@@ -48,11 +50,11 @@ int numcomp(const void* a, const void* b)
 }
 
 
-void sort(linearray* target)
+void sort(linearray target)
 {
-    for (size_t i = 0; i < target->linecount; i++)
+    for (size_t i = 0; i < target.linecount; i++)
     {
-        qsort(target->lines[i].nums, target->lines[i].numcount, sizeof(long double), numcomp);
-        qsort(target->lines[i].nans, target->lines[i].nancount, sizeof(char*), nancomp);
+        qsort(target.lines[i].nums, target.lines[i].numcount, sizeof(long double), numcomp);
+        qsort(target.lines[i].nans, target.lines[i].nancount, sizeof(char*), nancomp);
     }
 }

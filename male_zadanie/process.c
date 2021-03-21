@@ -3,18 +3,18 @@
 #include <stdbool.h>
 #include <errno.h>
 
-bool base8(const char* word, int length)
+bool base8(const char* word, size_t length)
 {
     if (word[0]!='0') return false;
     else
     {
         for (size_t i = 0; i < length; i++)
-            if ('0'>word[i] || word[i]>'8') return false;
+            if ('0'>word[i] || word[i]>'7') return false;
     }
     return true;
 }
 
-bool base16(const char* word, int length)
+bool base16(const char* word, size_t length)
 {
     if (length<1 || word[0]!='0' || word[1]!='x') return false;
     else
@@ -26,23 +26,25 @@ bool base16(const char* word, int length)
     return true;
 }
 
-bool base10positive(const char* word, int length)
+bool base10positive(const char* word, size_t length)
 {
+    if (length < ((word[0]=='+')?2:1)) return false;
     for (size_t i = (word[0]=='+')?1:0; i < length; i++)
         if ('0'>word[i] || word[i]>'9') return false;
 
     return true;
 }
 
-bool base10negative(const char* word, int length)
+bool base10negative(const char* word, size_t length)
 {
+    if (length < ((word[0]=='-')?2:1)) return false;
     for (size_t i = (word[0]=='-')?1:0; i < length; i++)
         if ('0'>word[i] || word[i]>'9') return false;
 
     return true;
 }
 
-bool floatnum(const char* word, int length)
+bool floatnum(const char* word, size_t length)
 {
     if ((!strcmp(word,"inf") || !strcmp(word,"-inf")) || !strcmp(word,"+inf"))
         return true;

@@ -13,7 +13,7 @@ linearray newarray();
 
 void add(line line, linearray* target);
 void empty(linearray c);
-void sort(linearray* target);
+void sort(linearray target);
 
 
 #endif //MALE_ZADANIE_LINEARRAY_H
