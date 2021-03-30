@@ -1,3 +1,0 @@
-/home/wojciech/CLionProjects/male_zadanie/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/wojciech/CLionProjects/male_zadanie/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/wojciech/CLionProjects/male_zadanie/cmake-build-debug/CMakeFiles/male_zadanie.dir
