@@ -1,110 +1,139 @@
 #include "process.h"
-#include <string.h>
-#include <stdbool.h>
 #include <errno.h>
+#include <stdbool.h>
+#include <string.h>
 
-bool base8(const char* word, size_t length)
+//slowo jest liczba w systemie osemkowym, jesli zaczyna sie od 0 i ma cyfry od 0 do 7
+static bool base8(const char *word, size_t length)
 {
-    if (word[0]!='0') return false;
-    else
-    {
-        for (size_t i = 0; i < length; i++)
-            if ('0'>word[i] || word[i]>'7') return false;
-    }
-    return true;
-}
+    if (word[0] != '0')
+        return false;
 
-bool base16(const char* word, size_t length)
-{
-    if (length<1 || word[0]!='0' || word[1]!='x') return false;
-    else
-    {
-        for (size_t i = 2; i < length; i++)
-            if (('0'>word[i] || word[i]>'9') && ('a'>word[i] || word[i]>'f')) return false;
-    }
+    for (size_t i = 0; i < length; i++)
+        if ('0' > word[i] || word[i] > '7')
+            return false;
 
     return true;
 }
 
-bool base10positive(const char* word, size_t length)
+//slowo jest liczba w systemie osemkowym, jesli zaczyna sie od 0x i ma cyfry od 0 do 9 i od a do f
+static bool base16(const char *word, size_t length)
 {
-    if (length < ((word[0]=='+')?2:1)) return false;
-    for (size_t i = (word[0]=='+')?1:0; i < length; i++)
-        if ('0'>word[i] || word[i]>'9') return false;
+    if (length < 1 || word[0] != '0' || word[1] != 'x')
+        return false;
+
+    for (size_t i = 2; i < length; i++)
+        if (('0' > word[i] || word[i] > '9') &&
+            ('a' > word[i] || word[i] > 'f'))
+            return false;
 
     return true;
 }
 
-bool base10negative(const char* word, size_t length)
+//slowo jest dodatnia liczba w systemie dziesiatkowym, jesli zaczyna sie od + lub nie
+//i poza tym sklada sie tylko z cyfr od 0 do 9 i ma choc jedna cyfre
+static bool base10Positive(const char *word, size_t length)
 {
-    if (length < ((word[0]=='-')?2:1)) return false;
-    for (size_t i = (word[0]=='-')?1:0; i < length; i++)
-        if ('0'>word[i] || word[i]>'9') return false;
+    size_t firstDigitPosition = 0;
+    if (word[0] == '+')
+        firstDigitPosition = 1;
+
+    if (length < firstDigitPosition + 1)
+        return false;
+
+    for (size_t i = firstDigitPosition; i < length; i++)
+        if ('0' > word[i] || word[i] > '9')
+            return false;
 
     return true;
 }
 
-bool floatnum(const char* word, size_t length)
+//slowo jest ujemna liczba w systemie dziesiatkowym, jesli zaczyna sie od -
+//i sklada sie tylko z cyfr od 0 do 9 i ma choc jedna cyfre
+static bool base10Negative(const char *word, size_t length)
 {
-    if ((!strcmp(word,"inf") || !strcmp(word,"-inf")) || !strcmp(word,"+inf"))
+    if (word[0] != '-')
+        return false;
+
+    if (length < 2)
+        return false;
+
+    for (size_t i = 1; i < length; i++)
+        if ('0' > word[i] || word[i] > '9')
+            return false;
+
+    return true;
+}
+
+//zeby slowo bylo liczba zmiennoprzecinkowa, moze:
+//    - byc slowem inf, +inf lub -inf
+//    - zawierac maksymalnie jedna kropke w srodku
+//    - zawierac maksymalnie jedno e w srodku, przy czym przed i po tym e musza wystepowac liczby, przed e moze
+//      sie pojawic kropka, ale po e - nie
+//    - zawierac + lub - na poczatku lub bezposrednio po literce e
+//    - zawierac co najmniej jedna cyfre, a jesli zawiera literke e, musi zawierac co najmniej jedna cyfre
+//      przed i po literce e
+// dlatego trzymam boole, ktore mowia o tym, czy dany typ symbolu juz wystapil / moze wystapic
+// i za kazdym znakiem sprawdzam powyzsze warunki
+static bool floatNum(const char *word, size_t length)
+{
+    if ((!strcmp(word, "inf") || !strcmp(word, "-inf")) ||
+         !strcmp(word, "+inf"))
         return true;
 
-    bool decpoint = true, e = true, numbers = false, minus = true, plus = true;
+    //czy moga wystapic dane znaki
+    bool decimalPoint = true, exponent = true, sign = true;
+
+    //czy juz wystapily liczby (od poczatku slowa lub od e)
+    bool numbers = false;
+
     for (size_t i = 0; i < length; i++)
     {
-        if (word[i]=='e')
+        if (word[i] == 'e')
         {
-            if (!e || !numbers) return false;
-            else
-            {
-                e = false;
-                minus = true;
-                plus = true;
-                decpoint = false;
-                numbers = false;
-            }
+            if (!exponent || !numbers)
+                return false;
+
+            exponent = false;
+            sign = true;
+            decimalPoint = false;
+            numbers = false;
         }
-        else if (word[i]=='.')
+        else if (word[i] == '.')
         {
-            if (!decpoint) return false;
-            else
-            {
-                minus = false;
-                plus = false;
-                decpoint = false;
-            }
+            if (!decimalPoint)
+                return false;
+
+            sign = false;
+            decimalPoint = false;
         }
-        else if (word[i]=='+')
+        else if (word[i] == '+' || word[i] == '-')
         {
-            if (!plus) return false;
-            {
-                plus = false;
-                minus = false;
-            }
+            if (!sign)
+                return false;
+
+            sign = false;
         }
-        else if (word[i]=='-')
+        else if (word[i] >= '0' && word[i] <= '9')
         {
-            if (!minus) return false;
-            else
-            {
-                plus = false;
-                minus = false;
-            }
-        }
-        else if (word[i]>='0' && word[i]<='9')
-        {
-            minus = false;
-            plus = false;
+            sign = false;
             numbers = true;
         }
-        else return false;
+        else
+            return false;
     }
-    if (!numbers) return false;
+
+    if (!numbers)
+        return false;
 
     return true;
 }
 
-void process(char* word, line* line)
+//po kolei sprawdzamy, czy word jest liczba w kazdym systemie
+//trzeba osobno sprawdzic dodatnie i ujemne liczby dziesietne, bo dodatnie wykraczaja poza zakres
+//signed long long, a ujemne wykraczaja poza zakres unsigned long long (oczywiscie)
+//jesli slowo nie pasuje do zadnego warunku liczby, dodajemy je jako nieliczbe
+void process(char *word, line *line)
 {
     size_t length = strlen(word);
 
@@ -112,42 +141,66 @@ void process(char* word, line* line)
     {
         errno = 0;
         long double x = (long double)strtoull(word, NULL, 8);
-        if (errno == ERANGE) addnan(word,line);
-        else addnum(x, line);
+
+        if (errno == ERANGE)
+            addNan(word, line);
+        else
+            addNum(x, line);
+
+        return;
     }
 
-    else if (base16(word, length))
+    if (base16(word, length))
     {
         errno = 0;
         long double x = (long double)strtoull(word, NULL, 16);
-        if (errno == ERANGE) addnan(word,line);
-        else addnum(x, line);
+
+        if (errno == ERANGE)
+            addNan(word, line);
+        else
+            addNum(x, line);
+
+        return;
     }
 
-    else if (base10positive(word,length))
+    if (base10Positive(word, length))
     {
         errno = 0;
         long double x = (long double)strtoull(word, NULL, 10);
-        if (errno == ERANGE) addnan(word,line);
-        else addnum(x, line);
+
+        if (errno == ERANGE)
+            addNan(word, line);
+        else
+            addNum(x, line);
+
+        return;
     }
 
-    else if (base10negative(word, length))
+    if (base10Negative(word, length))
     {
         errno = 0;
         long double x = (long double)strtoll(word, NULL, 10);
-        if (errno == ERANGE) addnan(word,line);
-        else addnum(x, line);
+
+        if (errno == ERANGE)
+            addNan(word, line);
+        else
+            addNum(x, line);
+
+        return;
     }
 
-    else if (floatnum(word, length))
+    if (floatNum(word, length))
     {
         errno = 0;
-        long double x = strtold(word,NULL);
-        if (errno == ERANGE) addnan(word,line);
-        addnum(x,line);
+        long double x = strtold(word, NULL);
+
+        if (errno == ERANGE)
+            addNan(word, line);
+        else
+            addNum(x, line);
+
+        return;
     }
 
-
-    else addnan(word,line);
+    addNan(word, line);
 }

@@ -1,137 +1,143 @@
-#define  _GNU_SOURCE
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
+// ZADANIE: similar_lines
+// AUTOR: Wojciech Paupa
+// Oczekiwana zlozonosc pamieciowa:
+// O(k), k - sumaryczna dlugosc wejscia
+// Oczekiwana zlozonosc obliczeniowa:
+// O(k log k)
+// Pomysl na rozwiazanie:
+/* Program wczytuje kazdy wiersz
+ * i rozdziela go na liczby i nieliczby.
+ * Kazdy wiersz jest przechowywany jako
+ * struktura, ktora trzyma tablice liczb oraz nieliczb
+ * i swoj numer. Te wszystkie wiersze sa trzymane
+ * w duzej tablicy. Kazdy z tych wierszy
+ * sortujemy po jego liczbach i nieliczbach po to, zebysmy mogli
+ * efektywnie porownywac ze soba pary wierszy.
+ * Dzieki temu mozemy posortowac tablice wierszy.
+ * Przechodzimy potem po posortowanej tablicy wierszy
+ * i zliczamy wiersze, ktore sa takie same. Zapisujemy
+ * ich numery do osobnej tablicy dwuwymiarowej,
+ * ktora w kazdym wierszu zawiera zbior takich samych wierszy wejscia.
+ * Sortujemy z osobna wiersze tablicy, a potem cala tablice i otrzymujemy wynik.
+ */
+
+#define _GNU_SOURCE
+#include "dynarray.h"
+#include "output.h"
 #include "process.h"
 #include <ctype.h>
-#include "linearray.h"
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
-const char* delims = " \t\v\f\r\n";
-linearray data;
+//limity tego, co program uznaje za znak
+#define MIN_CHAR 33
+#define MAX_CHAR 126
 
-bool correct(char k)
+//tablica ze wszystkimi znakami uznawanymi za bialy znak
+const char *delims = " \t\v\f\r\n";
+
+//tablica wartosci typu line ze wszystkimi wierszami wprowadzonymi do programu
+array data;
+
+//znak zgodnie z trescia jest poprawny, jesli ma kod od MIN_CHAR do MAX_CHAR albo jest bialym znakiem
+bool isCharCorrect(char k)
 {
-    if (33 <= k && k <= 126) return true;
-    switch (k)
-    {
-        case 32:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-        case 13:
+    if (MIN_CHAR <= k && k <= MAX_CHAR)
+        return true;
+
+    size_t length = strlen(delims);
+    for (size_t i = 0; i < length; i++)
+        if (k == delims[i])
             return true;
-        default:
-            return false;
-    }
+
+    return false;
 }
 
-bool checkstr(char* k, size_t size)
+//ciag znakow jest poprawny, jesli wszystkie jego znaki sa poprawne
+bool checkString(char *k, size_t size)
 {
     for (size_t i = 0; i < size; i++)
-        if (!correct(k[i]))
-        {
-            //printf("error at %zu, character %d\n",i,k[i]);
+        if (!isCharCorrect(k[i]))
             return false;
-        }
+
     return true;
 }
 
-void debug(line processed)
+//procedura splitWord dzieli wiersz na liczby i nieliczby, ktore zapisuje w obiekcie line dodanym do globalnej tablicy
+//w przypadku, w ktorym w wierszu sa same biale znaki, procedura nie doda nic do tablicy
+void splitWord(char *input, int number)
 {
-    printf("%zu USED, %zu ALLOCATED NANS\n",processed.nancount,processed.nanalloc);
-    for (size_t i = 0; i < processed.nancount; i++)
+    char *word = strtok(input, delims);
+    if (word != NULL)
     {
-        printf("%s\n",processed.nans[i]);
+        line processed = newLine(number);
+        while (word != NULL)
+        {
+            process(word, &processed);
+            word = strtok(NULL, delims);
+        }
+        addItem(&data, &processed);
     }
-    printf("%zu USED, %zu ALLOCATED NUMS\n",processed.numcount,processed.numalloc);
-    for (size_t i = 0; i < processed.numcount; i++)
-    {
-        printf("%Lf\n",processed.nums[i]);
-    }
-
-    puts("");
+    free(word);
 }
 
+//funkcja read sprawdza, czy wejscie jest poprawne, jesli tak, to prosi o dodanie wiersza do globalnej tablicy
+//jesli znalazla bledny wiersz, wypisuje error, jesli znalazla koniec pliku, zwraca falsz
 bool read(size_t number)
 {
     char *input = NULL;
     size_t size = 0;
-    int wyn = getline(&input, &size, stdin);
-    if (ferror(stdin)) exit(1);
-    if (wyn<0)
+
+    errno = 0;
+    int result = getline(&input, &size, stdin);
+    //co jesli nie udalo sie zaalokowac pamieci
+    if (errno == ENOMEM)
+        exit(1);
+    if (result < 0)
     {
         free(input);
         return false;
     }
-    if(strcmp("debug\n",input) == 0)
-    {
-        free(input);
-        return false;
-    }
-    size_t length = wyn;
-    line processed = newline(number);
+
+    size_t length = result;
+
+    //od razu przestajemy sie przejmowac wielkoscia liter
     for (size_t i = 0; i < length; i++)
         input[i] = (char)tolower(input[i]);
-    if (input[0]!='#')
-    {
 
-        if (!checkstr(input, length))
-        {
-            clear(processed);
+    if (input[0] != '#')
+    {
+        if (!checkString(input, length))
             fprintf(stderr, "ERROR %zu\n", number);
-        }
         else
-        {
-            char *word = strtok(input, delims);
-            if (word != NULL)
-            {
-                while (word != NULL)
-                {
-                    process(word, &processed);
-                    word = strtok(NULL, delims);
-                }
-                add(processed, &data);
-            } else clear(processed);
-            free(word);
-        }
-    } else clear(processed);
+            splitWord(input, number);
+    }
+
     free(input);
     return true;
 }
 
-void out()
-{
-    bool odw[data.linecount];
-    memset(odw,false,data.linecount);
-    for (size_t i = 0; i < data.linecount; i++)
-    {
-        if (odw[i]) continue;
-        printf("%zu",data.lines[i].number);
-        for (size_t j = i+1; j < data.linecount; j++)
-        {
-            if (equal(data.lines[i],data.lines[j]))
-            {
-                odw[j] = true;
-                printf(" %zu",data.lines[j].number);
-            }
-        }
-        puts("");
-    }
-}
-
 int main()
 {
-    data = newarray();
+    data = newArray(sizeof(line));
+
+    //petla wywolujaca funkcje read z kolejnymi liczbami wierszy. zatrzymuje sie, gdy read znajdzie koniec pliku
     int i = 0;
-    while(read(++i));
-    sort(data);
-    for(size_t it = 0; it < data.linecount; it++)
+    //ta instrukcja moze sie wydawac brzydka, ale wedlug mnie jest urocza
+    while (read(++i));
+
+    //robi faktyczne obliczenia i wypisuje wynik
+    output(data);
+
+    //zwolnienie calej pamieci w tablicy data
+    for (size_t it = 0; it < data.itemCount; it++)
     {
-        //printf("==== LINE NUMBER %zu =====\n",data.lines[it].number);
-        //debug(data.lines[it]);
+        line *x = (line *)at(data, it);
+        clearLine(*x);
     }
-    out();
-    empty(data);
+    free(data.items);
+
     return 0;
 }

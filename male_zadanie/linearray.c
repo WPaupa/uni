@@ -1,6 +1,5 @@
 #include "linearray.h"
 #include <string.h>
-#include <stdio.h>
 
 linearray newarray()
 {

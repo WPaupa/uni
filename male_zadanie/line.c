@@ -1,74 +1,50 @@
-#include <string.h>
 #include "line.h"
+#include <stdlib.h>
+#include <string.h>
 
-
-
-line newline(size_t number)
+//na poczatku wiersz ma tylko swoj numer i sklada sie z dwoch pustych tablic
+line newLine(size_t number)
 {
     line l;
-    l.nums = (long double*)malloc(sizeof(long double));
-    if (l.nums == NULL)
-        exit(1);
-    l.numcount = 0; l.numalloc = 1;
 
-    l.nans = (char**)malloc(sizeof(char*));
-    if (l.nans == NULL)
-        exit(1);
-    l.nancount = 0; l.nanalloc = 1;
-
-
+    l.nums = newArray(sizeof(long double));
+    l.nans = newArray(sizeof(char *));
     l.number = number;
 
     return l;
 }
 
-
-void addnum(long double num, line* line)
-{
-    if (line->numcount + 1 >= line->numalloc)
-    {
-        line->nums = realloc(line->nums,2 * line->numalloc * sizeof(long double));
-        if (line->nums == NULL)
-            exit(1);
-        line->numalloc *= 2;
-    }
-
-    line->nums[line->numcount] = num;
-    line->numcount ++;
+//dodanie liczby do wiersza to po prostu dopisanie jej do tablicy w tym wierszu
+void addNum(long double word, line *line) 
+{ 
+    addItem(&line->nums, &word); 
 }
 
-void addnan(char* word, line* line)
+//zeby dodac nieliczbe, potrzebujemy przekopiowac cala zawartosc wskaznika
+//w tym celu musimy zaalokowac dodatkowa pamiec na przekopiowane slowo
+//nie mozna zapomniec o dodaniu 1 do strlen, zeby nie bylo problemu z \0
+void addNan(char *word, line *line)
 {
-    size_t length = strlen(word)+1;
-    if (line->nancount + 1 >= line->nanalloc)
-    {
-        line->nans = realloc(line->nans,2 * line->nanalloc * sizeof(char*));
-        if (line->nans == NULL)
-            exit(1);
-        line->nanalloc *= 2;
-    }
-    line->nans[line->nancount]=(char*)malloc(length*sizeof(char));
-    if (line->nans[line->nancount] == NULL)
+    size_t length = strlen(word) + 1;
+
+    char *wordCopy = (char *)malloc(length * sizeof(char));
+    if (wordCopy == NULL)
         exit(1);
-    strcpy(line->nans[line->nancount],word);
-    line->nancount ++;
+
+    strcpy(wordCopy, word);
+    addItem(&line->nans, &wordCopy);
 }
 
-
-void clear(line line)
+//zanim mozemy zwolnic tablice z nieliczbami, musimy po kolei zwolnic kazda nieliczbe (bo to tez tablice)
+//tablice z liczbami mozemy zwolnic bez problemu
+void clearLine(line line)
 {
-    free(line.nums);
-    for (size_t i = 0; i < line.nancount; i++) free(line.nans[i]);
-    free(line.nans);
-}
+    for (size_t i = 0; i < line.nans.itemCount; i++)
+    {
+        char **pointerToWord = (char **)at(line.nans, i);
+        free(*pointerToWord);
+    }
 
-bool equal(line line1, line line2)
-{
-    if (line1.numcount != line2.numcount) return false;
-    if (line1.nancount != line2.nancount) return false;
-
-    for (size_t i = 0; i < line1.numcount; i++) if (line1.nums[i] != line2.nums[i]) return false;
-    for (size_t i = 0; i < line1.nancount; i++) if (strcmp(line1.nans[i],line2.nans[i]) != 0) return false;
-
-    return true;
+    free(line.nums.items);
+    free(line.nans.items);
 }

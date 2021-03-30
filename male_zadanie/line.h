@@ -1,22 +1,27 @@
 #ifndef MALE_ZADANIE_LINE_H
 #define MALE_ZADANIE_LINE_H
 #include <stdlib.h>
-#include <stdbool.h>
+#include "dynarray.h"
+
+//implementacja struktury wiersza - moze zawierac dowolna liczbe liczb i nieliczb oraz ma przypisany sobie numer
 
 typedef struct
 {
-    long double* nums;
-    char** nans;
+    array nums;
+    array nans;
 
-    size_t numcount, numalloc;
-    size_t nancount, nanalloc;
     size_t number;
 } line;
 
-line newline(size_t number);
-void addnum(long double num, line* line);
-void addnan(char* word, line* line);
-void clear(line line);
-bool equal(line line1, line line2);
+//nowy, pusty wiersz o danym przypisanym numerze
+line newLine(size_t number);
 
-#endif //MALE_ZADANIE_LINE_H
+//dodaja odpowiednio liczbe i nieliczbe do tablic z wiersza
+//nalezy pamietac, ze addNan nie kopiuje wskaznika na slowo do wiersza, ale kopiuje cale slowo
+void addNum(long double word, line* line);
+void addNan(char* word, line* line);
+
+//dealokuje pamiec przyznana wierszowi
+void clearLine(line line);
+
+#endif
