@@ -13,18 +13,20 @@ do
 
     # testy poprawnosciowe
     time ./"$1"<"$f" > "$tempdir/$tname.out" 2> "$tempdir/$tname.err"
-    if [[ $(diff "$tempdir/$tname.out" "${f%in}out") ]]; then
+    if [[ $(diff -b -B "$tempdir/$tname.out" "${f%in}out") ]]; then
         echo "OUT ERROR"
     else 
         echo "OUT OK"
     fi
-    if [[ $(diff "$tempdir/$tname.err" "${f%in}err") ]]; then
+    if [[ $(diff -b -B "$tempdir/$tname.err" "${f%in}err") ]]; then
 	echo "ERR ERROR"
     else 
         echo "ERR OK"
     fi
  
     # testy pamieciowe
+    # grepowanie po logach valgrinda to glupia metoda,
+    # ale na potrzeby tego zadania sie nie psuje
     valgrind --log-file="$tempdir/$tname.log" ./"$1"<"$f" > "$tempdir/$tname.out" 2> "$tempdir/$tname.err" 
     if ! grep -q "All heap blocks were freed" "$tempdir/$tname.log"; then
 	echo "MEMORY PROBLEMS"
