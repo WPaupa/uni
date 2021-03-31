@@ -1,18 +1,19 @@
 CC       = gcc
-CPPFLAGS =
 CFLAGS   = -Wall -Wextra -std=c11 -O2
-LDFLAGS  =
+OBJECTS  = main.o line.o process.o output.o dynarray.o comparers.o
 
 .PHONY: all clean
 
 all: similar_lines
 
-similar_lines: main.o line.o linearray.o process.o
-	$(CC) -o similar_lines $(CFLAGS) main.o line.o linearray.o process.o
-line.o: line.c line.h
-linearray.o: linearray.c linearray.h line.h
-process.o: process.c process.h line.h
-main.o: main.c line.h linearray.h
+similar_lines: $(OBJECTS)
+	$(CC) -o similar_lines $(CFLAGS) $(OBJECTS)
+comparers.o: comparers.c comparers.h dynarray.h line.h
+dynarray.o: dynarray.c dynarray.h
+line.o: line.c line.h dynarray.h
+main.o: main.c dynarray.h output.h process.h line.h
+output.o: output.c output.h dynarray.h comparers.h line.h
+process.o: process.c process.h line.h dynarray.h
 
 clean:
-	rm -f *.o similar_lines
+	-rm -f *.o similar_lines

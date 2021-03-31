@@ -13,6 +13,9 @@ array newArray(size_t size)
     a.itemSize = size;
     a.items = malloc(size * INITIAL_ARRAY_SIZE);
 
+    if (a.items == NULL)
+        exit(1);
+
     return a;
 }
 

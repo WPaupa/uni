@@ -1,22 +1,22 @@
-// ZADANIE: similar_lines
-// AUTOR: Wojciech Paupa
-// Oczekiwana zlozonosc pamieciowa:
-// O(k), k - sumaryczna dlugosc wejscia
-// Oczekiwana zlozonosc obliczeniowa:
-// O(k log k)
-// Pomysl na rozwiazanie:
-/* Program wczytuje kazdy wiersz
+/* ZADANIE: similar_lines
+ * AUTOR: Wojciech Paupa
+ * Oczekiwana zlozonosc pamieciowa:
+ * O(k), k - sumaryczna dlugosc wejscia
+ * Oczekiwana zlozonosc obliczeniowa:
+ * O(k log k)
+ * Pomysl na rozwiazanie:
+ * Program wczytuje kazdy wiersz
  * i rozdziela go na liczby i nieliczby.
  * Kazdy wiersz jest przechowywany jako
- * struktura, ktora trzyma tablice liczb oraz nieliczb
+ * struktura, ktora trzyma tablice dynamiczne liczb oraz nieliczb
  * i swoj numer. Te wszystkie wiersze sa trzymane
- * w duzej tablicy. Kazdy z tych wierszy
+ * w duzej dynamicznej tablicy. Kazdy z tych wierszy
  * sortujemy po jego liczbach i nieliczbach po to, zebysmy mogli
  * efektywnie porownywac ze soba pary wierszy.
  * Dzieki temu mozemy posortowac tablice wierszy.
  * Przechodzimy potem po posortowanej tablicy wierszy
  * i zliczamy wiersze, ktore sa takie same. Zapisujemy
- * ich numery do osobnej tablicy dwuwymiarowej,
+ * ich numery do osobnej dynamicznej tablicy dwuwymiarowej,
  * ktora w kazdym wierszu zawiera zbior takich samych wierszy wejscia.
  * Sortujemy z osobna wiersze tablicy, a potem cala tablice i otrzymujemy wynik.
  */
@@ -85,16 +85,24 @@ void splitWord(char *input, int number)
 
 //funkcja read sprawdza, czy wejscie jest poprawne, jesli tak, to prosi o dodanie wiersza do globalnej tablicy
 //jesli znalazla bledny wiersz, wypisuje error, jesli znalazla koniec pliku, zwraca falsz
+
+//ta funkcja korzysta ze ze zmiennych input i size, ktore deklaruje za pierwszym wywolaniem (static)
+//i potem za kazdym razem nadpisuje getline'em, ewentualnie zwiekszajac pamiec.
+//to zmniejsza sumaryczna liczbe alokacji.
+
 bool read(size_t number)
 {
-    char *input = NULL;
-    size_t size = 0;
+    static char *input = NULL;
+    static size_t size = 0;
 
     errno = 0;
     int result = getline(&input, &size, stdin);
+
     //co jesli nie udalo sie zaalokowac pamieci
     if (errno == ENOMEM)
         exit(1);
+
+    //co jesli natrafilismy na koniec pliku
     if (result < 0)
     {
         free(input);
@@ -115,12 +123,12 @@ bool read(size_t number)
             splitWord(input, number);
     }
 
-    free(input);
     return true;
 }
 
 int main()
 {
+    //inicjalizacja glownej tablicy z wierszami wejscia
     data = newArray(sizeof(line));
 
     //petla wywolujaca funkcje read z kolejnymi liczbami wierszy. zatrzymuje sie, gdy read znajdzie koniec pliku

@@ -3,6 +3,10 @@
 #include "line.h"
 #include <string.h>
 
+//kazdy komparator dziala wedlug tego samego schematu:
+//castujemy przekazane wskazniki na wskazniki na dany typ,
+//a potem uzywamy prostej funkcji do porownania ich wartosci
+
 //jesli pierwszy int jest wiekszy, to roznica jest dodatnia, jesli drugi - to ujemna itd.
 int intCompare(const void *a, const void *b)
 {
@@ -44,6 +48,7 @@ int floatCompare(const void *a, const void *b)
 }
 
 //nie ma znaczenia, czy najpierw porownujemy nieliczby, czy liczby. wazne, zeby to bylo spojne.
+//w drugim warunku moglibysmy po prostu od razu zwrocic numcompare, ale tak wydaje sie przejrzysciej
 int lineCompare(const void *a, const void *b)
 {
     line *x = (line *)a;

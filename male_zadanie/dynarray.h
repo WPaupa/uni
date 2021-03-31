@@ -4,11 +4,12 @@
 
 //wszystkie funkcje zwiazane z tablicami dynamicznymi, ktore mozna zaimplementowac polimorficznie
 
-//typ COMP_FUNC to funkcja, ktora przyjmuje dwa wskazniki i porownuje wartosci pod tymi wskaznikami,
-// zwracajac cos dodatniego, ujemnego lub zero (jesli sa rowne)
+//typ COMP_FUNC to wskaznik na funkcje, ktora przyjmuje dwa wskazniki i porownuje wartosci pod tymi wskaznikami,
+//zwracajac cos dodatniego, ujemnego lub zero (jesli sa rowne)
 typedef int (*COMP_FUNC)(const void *, const void *);
 
-//tablica dynamiczna, itemCount to liczba zapelnionych komorek, itemsAllocated to liczba zaalokowanych,
+//implementacja tablicy dynamicznej
+//itemCount to liczba zapelnionych komorek, itemsAllocated to liczba zaalokowanych,
 //itemSize to wielkosc jednej komorki w bajtach
 typedef struct
 {

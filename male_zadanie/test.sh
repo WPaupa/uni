@@ -1,27 +1,47 @@
 #!/bin/bash
+
+# tymczasowy folder na testy
+tempdir=`mktemp -d /tmp/simlines_XXX`
+
+# przetwarzanie testow
 for f in "$2"/*.in
 do
-    echo Test: "$(basename "$f")"
-    time ./"$1"<"$f" > "${f%.in}_prog.out" 2> "${f%.in}_prog.err"
-    if [[ $(diff "${f%.in}_prog.out" "${f%in}out") ]]; then
+    # odzyskiwanie nazwy testow
+    fname=$(basename "$f")
+    tname="${fname%.in}"
+    echo "Test: $tname"
+
+    # testy poprawnosciowe
+    time ./"$1"<"$f" > "$tempdir/$tname.out" 2> "$tempdir/$tname.err"
+    if [[ $(diff "$tempdir/$tname.out" "${f%in}out") ]]; then
         echo "OUT ERROR"
     else 
         echo "OUT OK"
     fi
-    if [[ $(diff "${f%.in}_prog.err" "${f%in}err") ]]; then
+    if [[ $(diff "$tempdir/$tname.err" "${f%in}err") ]]; then
 	echo "ERR ERROR"
     else 
         echo "ERR OK"
     fi
-
-    valgrind --log-file="${f%.in}_valgrind.out" ./"$1"<"$f" > "${f%.in}_prog.out" 2> "${f%.in}_prog.err" 
-    if ! grep -q "All heap blocks were freed" "${f%.in}_valgrind.out"; then
+ 
+    # testy pamieciowe
+    valgrind --log-file="$tempdir/$tname.log" ./"$1"<"$f" > "$tempdir/$tname.out" 2> "$tempdir/$tname.err" 
+    if ! grep -q "All heap blocks were freed" "$tempdir/$tname.log"; then
 	echo "MEMORY PROBLEMS"
     else
 	echo "MEMORY OK"
     fi
 
-    # rm "${f%.in}_valgrind.out"
-    rm "${f%.in}_prog.out"
-    rm "${f%.in}_prog.err"
+    # sprawdzam, czy valgrind znalazl problemy w dzialaniu programu
+    if ! grep -q "ERROR SUMMARY: 0 errors" "$tempdir/$tname.log"; then
+        echo "VALGRIND FOUND ERRORS"
+    fi
+
+    # sprzatanie po sobie
+    rm "$tempdir/$tname.log"
+    rm "$tempdir/$tname.out"
+    rm "$tempdir/$tname.err"
 done
+
+# czyscimy folder
+rm -r "$tempdir"
