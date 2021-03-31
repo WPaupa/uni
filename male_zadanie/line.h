@@ -4,7 +4,6 @@
 #include "dynarray.h"
 
 //implementacja struktury wiersza - moze zawierac dowolna liczbe liczb i nieliczb oraz ma przypisany sobie numer
-
 typedef struct
 {
     array nums;

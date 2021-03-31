@@ -1,5 +1,4 @@
 #include "process.h"
-#include <errno.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -66,7 +65,7 @@ static bool base10Negative(const char *word, size_t length)
 }
 
 //zeby slowo bylo liczba zmiennoprzecinkowa, moze:
-//    - byc slowem inf, +inf lub -inf
+//    - byc slowem inf, +inf lub -inf (nan liczymy jako nieliczbe)
 //    - zawierac maksymalnie jedna kropke w srodku
 //    - zawierac maksymalnie jedno e w srodku, przy czym przed i po tym e musza wystepowac liczby, przed e moze
 //      sie pojawic kropka, ale po e - nie
@@ -77,7 +76,8 @@ static bool base10Negative(const char *word, size_t length)
 // i za kazdym znakiem sprawdzam powyzsze warunki
 static bool floatNum(const char *word, size_t length)
 {
-    if ((!strcmp(word, "inf") || !strcmp(word, "-inf")) ||
+    if ((!strcmp(word,  "inf")  ||
+         !strcmp(word, "-inf")) ||
          !strcmp(word, "+inf"))
         return true;
 
@@ -139,65 +139,40 @@ void process(char *word, line *line)
 
     if (base8(word, length))
     {
-        errno = 0;
         long double x = (long double)strtoull(word, NULL, 8);
-
-        if (errno == ERANGE)
-            addNan(word, line);
-        else
-            addNum(x, line);
+        addNum(x, line);
 
         return;
     }
 
     if (base16(word, length))
     {
-        errno = 0;
         long double x = (long double)strtoull(word, NULL, 16);
-
-        if (errno == ERANGE)
-            addNan(word, line);
-        else
-            addNum(x, line);
+        addNum(x, line);
 
         return;
     }
 
     if (base10Positive(word, length))
     {
-        errno = 0;
         long double x = (long double)strtoull(word, NULL, 10);
-
-        if (errno == ERANGE)
-            addNan(word, line);
-        else
-            addNum(x, line);
+        addNum(x, line);
 
         return;
     }
 
     if (base10Negative(word, length))
     {
-        errno = 0;
         long double x = (long double)strtoll(word, NULL, 10);
-
-        if (errno == ERANGE)
-            addNan(word, line);
-        else
-            addNum(x, line);
+        addNum(x, line);
 
         return;
     }
 
     if (floatNum(word, length))
     {
-        errno = 0;
         long double x = strtold(word, NULL);
-
-        if (errno == ERANGE)
-            addNan(word, line);
-        else
-            addNum(x, line);
+        addNum(x, line);
 
         return;
     }

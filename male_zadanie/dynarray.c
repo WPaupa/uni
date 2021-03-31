@@ -20,6 +20,7 @@ array newArray(size_t size)
 }
 
 //kazde przesuniecie sie do przodu o jedna komorke odpowiada zwiekszeniu wskaznika o target.itemSize
+//nie mozemy zwracac wartosci, tylko musimy zwracac do niej wskaznik, bo nie znamy jej typu
 void *at(array target, size_t pos)
 {
     return target.items + pos * target.itemSize;

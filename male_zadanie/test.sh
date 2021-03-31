@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # tymczasowy folder na testy
-tempdir=`mktemp -d /tmp/simlines_XXX`
+tempdir=$(mktemp -d /tmp/simlines_XXX)
 
 # przetwarzanie testow
 for f in "$2"/*.in
