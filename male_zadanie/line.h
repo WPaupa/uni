@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include "dynarray.h"
 
-//implementacja struktury wiersza - moze zawierac dowolna liczbe liczb i nieliczb oraz ma przypisany sobie numer
+//implementacja struktury wiersza -
+//moze zawierac dowolna liczbe liczb i nieliczb
+//oraz ma przypisany sobie numer
 typedef struct
 {
     array nums;
@@ -16,7 +18,8 @@ typedef struct
 line newLine(size_t number);
 
 //dodaja odpowiednio liczbe i nieliczbe do tablic z wiersza
-//nalezy pamietac, ze addNan nie kopiuje wskaznika na slowo do wiersza, ale kopiuje cale slowo
+//nalezy pamietac, ze addNan nie kopiuje
+//wskaznika na slowo, ale kopiuje cale slowo
 void addNum(long double word, line* line);
 void addNan(char* word, line* line);
 

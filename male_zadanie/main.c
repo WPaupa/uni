@@ -18,7 +18,8 @@
  * i zliczamy wiersze, ktore sa takie same. Zapisujemy
  * ich numery do osobnej dynamicznej tablicy dwuwymiarowej,
  * ktora w kazdym wierszu zawiera zbior takich samych wierszy wejscia.
- * Sortujemy z osobna wiersze tablicy, a potem cala tablice i otrzymujemy wynik.
+ * Sortujemy z osobna wiersze tablicy, a potem cala tablice
+ * i otrzymujemy wynik.
  */
 
 #define _GNU_SOURCE
@@ -38,10 +39,12 @@
 //tablica ze wszystkimi znakami uznawanymi za bialy znak
 const char *delims = " \t\v\f\r\n";
 
-//tablica wartosci typu line ze wszystkimi wierszami wprowadzonymi do programu
+//tablica wartosci typu line
+//ze wszystkimi wierszami wprowadzonymi do programu
 array data;
 
-//znak zgodnie z trescia jest poprawny, jesli ma kod od MIN_CHAR do MAX_CHAR albo jest bialym znakiem
+//znak zgodnie z trescia jest poprawny,
+//jesli ma kod od MIN_CHAR do MAX_CHAR albo jest bialym znakiem
 bool isCharCorrect(char k)
 {
     if (MIN_CHAR <= k && k <= MAX_CHAR)
@@ -65,8 +68,10 @@ bool checkString(char *k, size_t size)
     return true;
 }
 
-//procedura splitWord dzieli wiersz na liczby i nieliczby, ktore zapisuje w obiekcie line dodanym do globalnej tablicy
-//w przypadku, w ktorym w wierszu sa same biale znaki, procedura nie doda nic do tablicy
+//procedura splitWord dzieli wiersz na liczby i nieliczby,
+//ktore zapisuje w obiekcie line dodanym do globalnej tablicy.
+//w przypadku, w ktorym w wierszu sa same biale znaki,
+//procedura nie doda nic do tablicy
 void splitWord(char *input, int number)
 {
     char *word = strtok(input, delims);
@@ -83,11 +88,15 @@ void splitWord(char *input, int number)
     free(word);
 }
 
-//funkcja read sprawdza, czy wejscie jest poprawne, jesli tak, to prosi o dodanie wiersza do globalnej tablicy
-//jesli znalazla bledny wiersz, wypisuje error, jesli znalazla koniec pliku, zwraca falsz
+//funkcja read sprawdza, czy wejscie jest poprawne,
+//jesli tak, to prosi o dodanie wiersza do globalnej tablicy
+//jesli znalazla bledny wiersz, wypisuje error,
+//jesli znalazla koniec pliku, zwraca falsz
 
-//ta funkcja korzysta ze ze zmiennych input i size, ktore deklaruje za pierwszym wywolaniem (static)
-//i potem za kazdym razem nadpisuje getline'em, ewentualnie zwiekszajac pamiec.
+//ta funkcja korzysta ze ze zmiennych input i size,
+//ktore deklaruje za pierwszym wywolaniem (static)
+//i potem za kazdym razem nadpisuje getline'em,
+//ewentualnie zwiekszajac pamiec.
 //to zmniejsza sumaryczna liczbe alokacji.
 
 bool read(size_t number)
@@ -134,7 +143,8 @@ int main()
     //inicjalizacja glownej tablicy z wierszami wejscia
     data = newArray(sizeof(line));
 
-    //petla wywolujaca funkcje read z kolejnymi liczbami wierszy. zatrzymuje sie, gdy read znajdzie koniec pliku
+    //petla wywolujaca funkcje read z kolejnymi liczbami wierszy.
+    //zatrzymuje sie, gdy read znajdzie koniec pliku
     int i = 0;
     //ta instrukcja moze sie wydawac brzydka, ale wedlug mnie jest urocza
     while (read(++i));

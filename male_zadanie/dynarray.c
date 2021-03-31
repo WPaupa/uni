@@ -3,7 +3,8 @@
 #include <string.h>
 #define INITIAL_ARRAY_SIZE 4
 
-//na poczatek alokujemy jedno miejsce w pamieci i nie zapelniamy zadnych komorek
+//na poczatek alokujemy jedno miejsce w pamieci
+//i nie zapelniamy zadnych komorek
 array newArray(size_t size)
 {
     array a;
@@ -19,16 +20,20 @@ array newArray(size_t size)
     return a;
 }
 
-//kazde przesuniecie sie do przodu o jedna komorke odpowiada zwiekszeniu wskaznika o target.itemSize
-//nie mozemy zwracac wartosci, tylko musimy zwracac do niej wskaznik, bo nie znamy jej typu
+//kazde przesuniecie sie do przodu o jedna komorke
+//odpowiada zwiekszeniu wskaznika o target.itemSize.
+//nie mozemy zwracac wartosci, tylko musimy zwracac do niej wskaznik,
+//bo nie znamy jej typu
 void *at(array target, size_t pos)
 {
     return target.items + pos * target.itemSize;
 }
 
-//gdy skonczy sie miejsce w pamieci, alokujemy dwa razy tyle, ile do tej pory mielismy
+//gdy skonczy sie miejsce w pamieci, alokujemy dwa razy tyle,
+//ile do tej pory mielismy.
 //w ten sposob sumaryczny czas alokacji nie przekracza 2*n;
-//funkcja dostaje wskaznik na element, ktory ma byc dodany, wiec musi uzyc memcpy, zeby dane pod tym wskaznikiem
+//funkcja dostaje wskaznik na element, ktory ma byc dodany,
+//wiec musi uzyc memcpy, zeby dane pod tym wskaznikiem
 //przekopiowac do tablicy
 void addItem(array *target, void *item)
 {
@@ -47,13 +52,15 @@ void addItem(array *target, void *item)
     target->itemCount++;
 }
 
-//arrayCompare porownuje tablice "leksykograficznie", tzn. najpierw po kolejnych elementach tablicy w sensie funkcji comp,
+//arrayCompare porownuje tablice "leksykograficznie", tzn.
+//najpierw po kolejnych elementach tablicy w sensie funkcji comp,
 //a potem dopiero po dlugosci.
 int arrayCompare(array array1, array array2, COMP_FUNC comp)
 {
     size_t size = array1.itemSize;
 
-    //program nie powinien porownywac dwoch tablic, w ktorych itemSize jest inny
+    //program nie powinien porownywac dwoch tablic,
+    //w ktorych itemSize jest inny.
     //mimo to na wszelki wypadek warto dodac takie sprawdzenie
     if (size < array2.itemSize)
         return -1;
