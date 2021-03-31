@@ -23,4 +23,4 @@ void addNan(char* word, line* line);
 //dealokuje pamiec przyznana wierszowi
 void clearLine(line line);
 
-#endif
+#endif //MALE_ZADANIE_LINE_H
