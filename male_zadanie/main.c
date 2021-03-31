@@ -26,6 +26,8 @@
 #include "dynarray.h"
 #include "output.h"
 #include "process.h"
+#include "line.h"
+#include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>

@@ -1,4 +1,5 @@
 #include "line.h"
+#include "dynarray.h"
 #include <stdlib.h>
 #include <string.h>
 

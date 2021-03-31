@@ -2,6 +2,7 @@
 #include "comparers.h"
 #include "dynarray.h"
 #include "line.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
