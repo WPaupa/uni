@@ -111,18 +111,21 @@ bool read(size_t number)
 
     size_t length = result;
 
-    //od razu przestajemy sie przejmowac wielkoscia liter
+    //input[0] jest dobrze zdefiniowane
+    //nawet dla length = 0 (wtedy to jest \0)
+    if (input[0] == '#')
+        return true;
+
+    if (!checkString(input, length))
+    {
+        fprintf(stderr, "ERROR %zu\n", number);
+        return true;
+    }
+
     for (size_t i = 0; i < length; i++)
         input[i] = (char)tolower(input[i]);
 
-    if (input[0] != '#')
-    {
-        if (!checkString(input, length))
-            fprintf(stderr, "ERROR %zu\n", number);
-        else
-            splitWord(input, number);
-    }
-
+    splitWord(input, number);
     return true;
 }
 
